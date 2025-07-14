@@ -28,4 +28,77 @@ async function fetchPage(page, proxies) {
     }
 
     try {
-      const res = await fetch(`https://mee6.xyz/api/plugins/levels/leaderboard/1317255994459426868?limit=100&p
+      const res = await fetch(`https://mee6.xyz/api/plugins/levels/leaderboard/1317255994459426868?limit=100&page=${page}`, {
+        agent,
+        headers: {
+          Authorization: process.env.MEE6_TOKEN,
+          'User-Agent': 'XPCollector/1.0'
+        },
+        timeout: 15000
+      });
+
+      if (!res.ok) continue;
+
+      const data = await res.json();
+      return data.players || [];
+
+    } catch {}
+  }
+
+  return [];
+}
+
+export const handler = async (event) => {
+  if (event.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+    return {
+      statusCode: 401,
+      body: 'Unauthorized'
+    };
+  }
+
+  try {
+    const proxies = await getProxies();
+    const allResults = await Promise.all(
+      Array.from({ length: MAX_PAGES }, (_, i) => fetchPage(i, proxies))
+    );
+
+    const allPlayers = allResults.flat().filter(p => p && p.id && p.username);
+
+    const unique = new Map();
+    allPlayers.forEach(p => {
+      unique.set(p.id, {
+        discord_id: p.id,
+        username: p.username,
+        xp: p.xp,
+        level: p.level
+      });
+    });
+
+    const deduped = Array.from(unique.values());
+
+    const { error } = await supabase
+      .from('users_xp')
+      .upsert(deduped, { onConflict: ['discord_id'] });
+
+    if (error) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'DB write failed', details: error.message }),
+        headers: { 'Content-Type': 'application/json' }
+      };
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'XP saved', total: deduped.length }),
+      headers: { 'Content-Type': 'application/json' }
+    };
+
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Unexpected error', details: err.message }),
+      headers: { 'Content-Type': 'application/json' }
+    };
+  }
+};
