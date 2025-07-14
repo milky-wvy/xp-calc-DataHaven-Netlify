@@ -5,11 +5,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export default async function handler(req, res) {
-  const { username } = req.query;
+export const handler = async (event) => {
+  const username = event.queryStringParameters?.username;
 
   if (!username) {
-    return res.status(400).json({ error: "Username is required" });
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Username is required" }),
+      headers: { "Content-Type": "application/json" }
+    };
   }
 
   const { data, error } = await supabase
@@ -18,14 +22,25 @@ export default async function handler(req, res) {
     .ilike('username', username);
 
   if (error) {
-    console.error("Supabase error:", error);
-    return res.status(500).json({ error: "Database error", details: error.message });
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Database error", details: error.message }),
+      headers: { "Content-Type": "application/json" }
+    };
   }
 
   if (!data || data.length === 0) {
-    return res.status(404).json({ error: "User not found" });
+    return {
+      statusCode: 404,
+      body: JSON.stringify({ error: "User not found" }),
+      headers: { "Content-Type": "application/json" }
+    };
   }
 
   const player = data[0];
-  return res.status(200).json({ username: player.username, xp: player.xp, level: player.level });
-}
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ username: player.username, xp: player.xp, level: player.level }),
+    headers: { "Content-Type": "application/json" }
+  };
+};
