@@ -10,17 +10,14 @@ const levels = [
 
 async function calculateXP() {
   const username = document.getElementById('xpInput').value.trim();
-  const message = document.getElementById('realMooseMessage');
   const topStats = document.getElementById('topStats');
   const bottomStats = document.getElementById('bottomStats');
-
+  const message = document.getElementById('realMooseMessage');
   topStats.innerHTML = '';
   bottomStats.innerHTML = '';
   message.textContent = '';
 
   if (!username) return;
-
-  localStorage.setItem('xpInput', username);
 
   try {
     const res = await fetch(`/.netlify/functions/get-xp?username=${encodeURIComponent(username)}`);
@@ -42,9 +39,9 @@ async function calculateXP() {
       <p><strong>Days:</strong> ${day.toFixed(2)}</p>
     `;
 
-    let progressHTML = '';
-    let target = 0, reward = '';
+    topStats.innerHTML = statsHTML;
 
+    let target = 0, reward = '';
     for (let i = 0; i < levels.length; i++) {
       if (xp < levels[i].xp) {
         reward = levels[i].keys;
@@ -54,7 +51,6 @@ async function calculateXP() {
     }
 
     if (target === 0) {
-      topStats.innerHTML = statsHTML;
       message.textContent = 'You are Real Moose!';
       return;
     }
@@ -65,36 +61,43 @@ async function calculateXP() {
     const hours = Math.floor((minutesLeft % 1440) / 60);
     const minutes = minutesLeft % 60;
 
-    progressHTML = `
+    const progressHTML = `
       <h3>🔑 Progress</h3>
       <p><strong>To reach:</strong> ${reward}</p>
       <p><strong>XP left:</strong> ${left.toLocaleString()}</p>
       <p><strong>Time:</strong> ${days}d ${hours}h ${minutes}m</p>
     `;
 
-    topStats.innerHTML = statsHTML;
     bottomStats.innerHTML = progressHTML;
-
   } catch (e) {
     topStats.innerHTML = `<div class="error">❌ ${e.message}</div>`;
   }
 }
 
-window.onload = async () => {
-  const savedXP = localStorage.getItem('xpInput');
-  if (savedXP) {
-    document.getElementById('xpInput').value = savedXP;
-    calculateXP();
-  }
+async function loadLeaderboard() {
+  const leaderboardList = document.getElementById('leaderboardList');
+  leaderboardList.innerHTML = '<li>Loading...</li>';
 
   try {
     const res = await fetch('/.netlify/functions/leaderboard');
     const data = await res.json();
-    const list = document.getElementById('leaderboardList');
-    list.innerHTML = data.map(
-      (u, i) => `<li>#${i + 1} ${u.username} — ${u.xp.toLocaleString()} XP</li>`
-    ).join('');
-  } catch (e) {
-    console.warn('Leaderboard load failed:', e.message);
+
+    if (!Array.isArray(data)) throw new Error('Invalid leaderboard data');
+
+    leaderboardList.innerHTML = data.map((user, i) => `
+      <li><strong>#${i + 1}</strong> ${user.username} — ${user.xp.toLocaleString()} XP — Level ${user.level}</li>
+    `).join('');
+  } catch (err) {
+    leaderboardList.innerHTML = '<li>Error loading leaderboard</li>';
+    console.error(err);
   }
+}
+
+window.onload = () => {
+  const saved = localStorage.getItem('xpInput');
+  if (saved) {
+    document.getElementById('xpInput').value = saved;
+    calculateXP();
+  }
+  loadLeaderboard();
 };
