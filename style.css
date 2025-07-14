@@ -3,6 +3,13 @@ body {
   margin: 0;
   padding: 0;
   background-color: #fdfdfd;
+  color: #000;
+  transition: background 0.3s ease;
+}
+
+body.dark {
+  background-color: #1e1e1e;
+  color: #f1f1f1;
 }
 
 #background {
@@ -11,7 +18,7 @@ body {
   height: 100%;
   background: url('background_day.png') no-repeat center center / cover;
   z-index: -1;
-  transition: background-image 0.5s ease;
+  transition: background-image 0.3s ease;
 }
 
 body.dark #background {
@@ -25,7 +32,7 @@ body.dark #background {
 
 input#xpInput {
   padding: 10px;
-  width: 300px;
+  width: 280px;
   font-size: 16px;
   border-radius: 6px;
   border: 1px solid #ccc;
@@ -43,64 +50,71 @@ button {
   cursor: pointer;
 }
 
+button:hover {
+  opacity: 0.9;
+}
+
 #realMooseMessage {
-  margin-top: 16px;
+  margin-top: 12px;
   font-weight: bold;
   color: #3c2b1b;
 }
 
 #stats {
   position: absolute;
-  right: 20px;
   top: 120px;
+  right: 30px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: calc(100% - 160px);
+  gap: 20px;
 }
 
 .stats-box {
   background: rgba(255, 255, 255, 0.9);
   padding: 20px;
   border-radius: 12px;
-  width: 300px;
-  text-align: left;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 280px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 body.dark .stats-box {
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
+  background: rgba(30, 30, 30, 0.9);
+  color: #f1f1f1;
 }
 
 #leaderboard {
   position: absolute;
   left: 20px;
   top: 20px;
-  width: 320px;
   background: rgba(255,255,255,0.85);
-  padding: 20px;
+  padding: 10px 12px;
   border-radius: 12px;
-  max-height: 80vh;
+  width: 320px;
+  max-height: 90vh;
   overflow-y: auto;
 }
 
 body.dark #leaderboard {
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
+  background: rgba(20, 20, 20, 0.85);
+  color: #f1f1f1;
 }
 
-#leaderboardList li {
-  margin: 10px 0;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
+#leaderboard ul {
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-body.dark #leaderboardList li {
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
+#leaderboard li {
+  background: rgba(255,255,255,0.9);
+  border-radius: 8px;
+  margin: 8px 0;
+  padding: 10px;
+  font-size: 15px;
+}
+
+body.dark #leaderboard li {
+  background: rgba(40, 40, 40, 0.95);
 }
 
 .theme-toggle {
@@ -111,30 +125,17 @@ body.dark #leaderboardList li {
 
 #themeSwitch {
   background-color: #6c422f;
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 8px 14px;
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-#themeSwitch span {
-  background-color: #6c422f;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
-.load-more {
-  display: block;
-  margin: 15px auto;
-  padding: 10px 20px;
-  background-color: #6c422f;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+#themeSwitch:hover {
+  opacity: 0.9;
 }
