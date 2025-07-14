@@ -11,48 +11,16 @@ body {
   height: 100%;
   background: url('background_day.png') no-repeat center center / cover;
   z-index: -1;
+  transition: background-image 0.5s ease;
 }
 
-.main-layout {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  height: 100vh;
-  gap: 20px;
-  padding: 20px;
-  box-sizing: border-box;
+body.dark #background {
+  background-image: url('background_night.png');
 }
 
-.left-panel {
-  background: rgba(255, 255, 255, 0.85);
-  padding: 15px;
-  border-radius: 12px;
-  overflow-y: auto;
-  max-height: 90vh;
-}
-
-.right-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.stats-block {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 350px;
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.center-input {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+.container {
   text-align: center;
+  margin-top: 40px;
 }
 
 input#xpInput {
@@ -81,8 +49,92 @@ button {
   color: #3c2b1b;
 }
 
+#stats {
+  position: absolute;
+  right: 20px;
+  top: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: calc(100% - 160px);
+}
+
+.stats-box {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 12px;
+  width: 300px;
+  text-align: left;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .stats-box {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+#leaderboard {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 320px;
+  background: rgba(255,255,255,0.85);
+  padding: 20px;
+  border-radius: 12px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+body.dark #leaderboard {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+#leaderboardList li {
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  list-style: none;
+}
+
+body.dark #leaderboardList li {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+}
+
 .theme-toggle {
   position: fixed;
   bottom: 10px;
   left: 10px;
+}
+
+#themeSwitch {
+  background-color: #6c422f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#themeSwitch span {
+  background-color: #6c422f;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.load-more {
+  display: block;
+  margin: 15px auto;
+  padding: 10px 20px;
+  background-color: #6c422f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
