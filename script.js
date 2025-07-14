@@ -8,12 +8,16 @@ const levels = [
   { xp: 101675, keys: '3 keys' }
 ];
 
+const loadedUserIds = new Set();
+let leaderboardOffset = 0;
+const leaderboardLimit = 20;
+let isLoadingMore = false;
+
 async function calculateXP() {
   const username = document.getElementById('xpInput').value.trim();
   const topStats = document.getElementById('topStats');
   const bottomStats = document.getElementById('bottomStats');
   const message = document.getElementById('realMooseMessage');
-
   topStats.innerHTML = '';
   bottomStats.innerHTML = '';
   message.textContent = '';
@@ -31,7 +35,7 @@ async function calculateXP() {
     const hour = minute / 60;
     const day = hour / 24;
 
-    const statsHTML = `
+    let statsHTML = `
       <h3>📊 Your Stats</h3>
       <p><strong>Username:</strong> ${data.username}</p>
       <p><strong>XP:</strong> ${xp.toLocaleString()}</p>
@@ -39,6 +43,7 @@ async function calculateXP() {
       <p><strong>Hours:</strong> ${hour.toFixed(2)}</p>
       <p><strong>Days:</strong> ${day.toFixed(2)}</p>
     `;
+
     topStats.innerHTML = statsHTML;
 
     let target = 0, prev = 0, reward = '';
@@ -75,47 +80,57 @@ async function calculateXP() {
   }
 }
 
-async function loadLeaderboardBatch(offset = 0, limit = 20) {
-  const res = await fetch(`/.netlify/functions/leaderboard?offset=${offset}&limit=${limit}`);
-  const data = await res.json();
-  return data || [];
-}
-
-let leaderboardOffset = 0;
-const leaderboardList = document.getElementById('leaderboardList');
-let isLoadingMore = false;
-
-async function loadMoreLeaderboard() {
+async function loadLeaderboard() {
   if (isLoadingMore) return;
   isLoadingMore = true;
-  const users = await loadLeaderboardBatch(leaderboardOffset);
-  users.forEach((u, i) => {
-    const li = document.createElement('li');
-    li.innerHTML = `#${leaderboardOffset + i + 1} <strong>${u.username}</strong> — ${u.xp.toLocaleString()} XP<br/>Level ${u.level}`;
-    leaderboardList.appendChild(li);
-  });
-  leaderboardOffset += users.length;
-  isLoadingMore = false;
+
+  try {
+    const res = await fetch(`/.netlify/functions/leaderboard?offset=${leaderboardOffset}&limit=${leaderboardLimit}`);
+    const data = await res.json();
+
+    const list = document.getElementById('leaderboardList');
+
+    data.forEach((user, index) => {
+      if (loadedUserIds.has(user.discord_id)) return;
+
+      loadedUserIds.add(user.discord_id);
+
+      const li = document.createElement('li');
+      li.innerHTML = `#${leaderboardOffset + index + 1} <b>${user.username}</b> — ${user.xp.toLocaleString()} XP<br/>Level ${user.level}`;
+      list.appendChild(li);
+    });
+
+    leaderboardOffset += leaderboardLimit;
+  } catch (err) {
+    console.error('Failed to load leaderboard:', err);
+  } finally {
+    isLoadingMore = false;
+  }
 }
 
-document.getElementById('themeSwitch').addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  const icon = document.getElementById('themeSwitch');
-  icon.innerHTML = document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
-});
-
-document.addEventListener('DOMContentLoaded', () => {
+window.onload = () => {
   const savedXP = localStorage.getItem('xpInput');
   if (savedXP) {
     document.getElementById('xpInput').value = savedXP;
     calculateXP();
   }
-  loadMoreLeaderboard();
+  loadLeaderboard();
+};
+
+document.getElementById('leaderboardList').addEventListener('scroll', () => {
+  const list = document.getElementById('leaderboardList');
+  if (list.scrollTop + list.clientHeight >= list.scrollHeight - 10) {
+    loadLeaderboard();
+  }
 });
 
-document.getElementById('leaderboard').addEventListener('scroll', (e) => {
-  const el = e.target;
-  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) {
-    loadMoreLeaderboard();
-  }
+document.getElementById('themeSwitch').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  document.getElementById('background').style.backgroundImage = isDark
+    ? "url('background_night.png')"
+    : "url('background_day.png')";
+
+  const button = document.getElementById('themeSwitch');
+  button.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
 });
