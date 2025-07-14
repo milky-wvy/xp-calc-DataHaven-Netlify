@@ -9,20 +9,26 @@
 <body>
   <div id="background"></div>
 
-  <div class="container" id="mainContainer">
-    <h1>XP Calculator</h1>
-    <input type="text" id="xpInput" placeholder="Enter your Discord name" />
+  <div class="main-layout">
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="left-panel">
+      <h3>🏆 Leaderboard</h3>
+      <ul id="leaderboardList"></ul>
+    </div>
 
-    <button onclick="calculateXP()">Search XP</button>
-
-    <h2 class="stat-title">Your Statistic:</h2>
-    <div id="result" class="result-grid"></div>
-    <div id="realMooseMessage"></div>
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="right-panel">
+      <div id="topStats" class="stats-block"></div>
+      <div id="bottomStats" class="stats-block"></div>
+    </div>
   </div>
 
-  <div id="leaderboard">
-    <h3>🏆 Leaderboard</h3>
-    <ul id="leaderboardList"></ul>
+  <div class="center-input">
+    <h1>XP Calculator</h1>
+    <input type="text" id="xpInput" placeholder="Enter your Discord name" />
+    <button onclick="calculateXP()">Search XP</button>
+    <h2 class="stat-title">Your Statistic:</h2>
+    <div id="realMooseMessage"></div>
   </div>
 
   <div class="theme-toggle">
