@@ -117,9 +117,13 @@ window.onload = () => {
   loadLeaderboard();
 };
 
-document.getElementById('leaderboardList').addEventListener('scroll', () => {
-  const list = document.getElementById('leaderboardList');
-  if (list.scrollTop + list.clientHeight >= list.scrollHeight - 10) {
+const leaderboardContainer = document.getElementById('leaderboard');
+leaderboardContainer.addEventListener('scroll', () => {
+  if (
+    leaderboardContainer.scrollTop +
+      leaderboardContainer.clientHeight >=
+    leaderboardContainer.scrollHeight - 10
+  ) {
     loadLeaderboard();
   }
 });
