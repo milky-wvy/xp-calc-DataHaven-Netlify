@@ -2,32 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>XP Calculator</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="background"></div>
 
-  <div class="container">
-    <h1>XP Calculator</h1>
-    <input type="text" id="xpInput" placeholder="Enter your Discord name" />
-    <button onclick="calculateXP()">Search XP</button>
-    <h2>Your Stats:</h2>
-    <div id="result" class="result-grid"></div>
-    <div id="realMooseMessage"></div>
-  </div>
-
-  <!-- 🎖️ Лидерборд -->
   <div id="leaderboard">
     <h3>🏆 Leaderboard</h3>
     <ul id="leaderboardList"></ul>
   </div>
 
-  <!-- 🌗 Переключатель темы -->
+  <div class="container" id="mainContainer">
+    <h1>XP Calculator</h1>
+    <input type="text" id="xpInput" placeholder="Enter your Discord name" />
+    <button onclick="calculateXP()">Search XP</button>
+    <div id="realMooseMessage"></div>
+  </div>
+
+  <div id="stats">
+    <div id="topStats" class="stats-box"></div>
+    <div id="bottomStats" class="stats-box"></div>
+  </div>
+
   <div class="theme-toggle">
-    <button id="themeSwitch">🌙</button>
-    <span>Dark Mode</span>
+    <button id="themeSwitch"><span>🌙</span> <span class="theme-label">Dark Mode</span></button>
   </div>
 
   <script src="script.js"></script>
