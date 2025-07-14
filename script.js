@@ -8,14 +8,12 @@ const levels = [
   { xp: 101675, keys: '3 keys' }
 ];
 
-let leaderboardPage = 0;
-let loadingMore = false;
-
 async function calculateXP() {
   const username = document.getElementById('xpInput').value.trim();
   const topStats = document.getElementById('topStats');
   const bottomStats = document.getElementById('bottomStats');
   const message = document.getElementById('realMooseMessage');
+
   topStats.innerHTML = '';
   bottomStats.innerHTML = '';
   message.textContent = '';
@@ -41,6 +39,7 @@ async function calculateXP() {
       <p><strong>Hours:</strong> ${hour.toFixed(2)}</p>
       <p><strong>Days:</strong> ${day.toFixed(2)}</p>
     `;
+    topStats.innerHTML = statsHTML;
 
     let target = 0, prev = 0, reward = '';
     for (let i = 0; i < levels.length; i++) {
@@ -53,7 +52,6 @@ async function calculateXP() {
     }
 
     if (target === 0) {
-      topStats.innerHTML = statsHTML;
       message.textContent = 'You are Real Moose!';
       return;
     }
@@ -71,54 +69,53 @@ async function calculateXP() {
       <p><strong>Time:</strong> ${days}d ${hours}h ${minutes}m</p>
     `;
 
-    topStats.innerHTML = statsHTML;
     bottomStats.innerHTML = progressHTML;
-
   } catch (e) {
     topStats.innerHTML = `<div class="error">❌ ${e.message}</div>`;
   }
 }
 
-async function loadLeaderboardPage() {
-  if (loadingMore) return;
-  loadingMore = true;
-  leaderboardPage++;
-
-  try {
-    const res = await fetch(`/.netlify/functions/leaderboard?page=${leaderboardPage}`);
-    const data = await res.json();
-
-    const list = document.getElementById('leaderboardList');
-    data.forEach((u, i) => {
-      const item = document.createElement('li');
-      item.innerHTML = `<strong>#${(leaderboardPage - 1) * 20 + i + 1}</strong> ${u.username} — ${u.xp.toLocaleString()} XP — Level ${u.level}`;
-      list.appendChild(item);
-    });
-  } catch (e) {
-    console.warn('Leaderboard load error:', e);
-  } finally {
-    loadingMore = false;
-  }
+async function loadLeaderboardBatch(offset = 0, limit = 20) {
+  const res = await fetch(`/.netlify/functions/leaderboard?offset=${offset}&limit=${limit}`);
+  const data = await res.json();
+  return data || [];
 }
 
-window.addEventListener('scroll', () => {
-  const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
-  if (nearBottom) loadLeaderboardPage();
+let leaderboardOffset = 0;
+const leaderboardList = document.getElementById('leaderboardList');
+let isLoadingMore = false;
+
+async function loadMoreLeaderboard() {
+  if (isLoadingMore) return;
+  isLoadingMore = true;
+  const users = await loadLeaderboardBatch(leaderboardOffset);
+  users.forEach((u, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `#${leaderboardOffset + i + 1} <strong>${u.username}</strong> — ${u.xp.toLocaleString()} XP<br/>Level ${u.level}`;
+    leaderboardList.appendChild(li);
+  });
+  leaderboardOffset += users.length;
+  isLoadingMore = false;
+}
+
+document.getElementById('themeSwitch').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const icon = document.getElementById('themeSwitch');
+  icon.innerHTML = document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
 });
 
-window.onload = () => {
+document.addEventListener('DOMContentLoaded', () => {
   const savedXP = localStorage.getItem('xpInput');
   if (savedXP) {
     document.getElementById('xpInput').value = savedXP;
     calculateXP();
   }
-  loadLeaderboardPage();
-};
+  loadMoreLeaderboard();
+});
 
-document.getElementById('themeSwitch').addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  const bg = document.getElementById('background');
-  bg.style.backgroundImage = document.body.classList.contains('dark')
-    ? "url('background_night.png')"
-    : "url('background_day.png')";
+document.getElementById('leaderboard').addEventListener('scroll', (e) => {
+  const el = e.target;
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) {
+    loadMoreLeaderboard();
+  }
 });
