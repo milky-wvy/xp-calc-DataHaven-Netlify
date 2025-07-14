@@ -17,7 +17,7 @@ async function calculateXP() {
 
   if (!username) return;
 
-  localStorage.setItem('xpInput', username); // Сохраняем
+  localStorage.setItem('xpInput', username);
 
   try {
     const res = await fetch(`/.netlify/functions/get-xp?username=${encodeURIComponent(username)}`);
@@ -85,15 +85,17 @@ window.onload = async () => {
     calculateXP();
   }
 
-  // Leaderboard
   try {
     const res = await fetch('/.netlify/functions/leaderboard');
     const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Failed to load leaderboard');
+
     const list = document.getElementById('leaderboardList');
-    list.innerHTML = data.slice(0, 10).map(
+    list.innerHTML = data.map(
       (u, i) => `<li>#${i + 1} ${u.username} — ${u.xp.toLocaleString()} XP</li>`
     ).join('');
-  } catch {
-    // можно залогировать, но не обязательно
+  } catch (e) {
+    console.warn('Leaderboard error:', e.message);
   }
 };
