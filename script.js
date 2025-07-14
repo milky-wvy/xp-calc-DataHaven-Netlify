@@ -10,9 +10,12 @@ const levels = [
 
 async function calculateXP() {
   const username = document.getElementById('xpInput').value.trim();
-  const result = document.getElementById('result');
   const message = document.getElementById('realMooseMessage');
-  result.innerHTML = '';
+  const topStats = document.getElementById('topStats');
+  const bottomStats = document.getElementById('bottomStats');
+
+  topStats.innerHTML = '';
+  bottomStats.innerHTML = '';
   message.textContent = '';
 
   if (!username) return;
@@ -30,8 +33,7 @@ async function calculateXP() {
     const hour = minute / 60;
     const day = hour / 24;
 
-    let progressHTML = '';
-    let statsHTML = `
+    const statsHTML = `
       <h3>📊 Your Stats</h3>
       <p><strong>Username:</strong> ${data.username}</p>
       <p><strong>XP:</strong> ${xp.toLocaleString()}</p>
@@ -40,20 +42,20 @@ async function calculateXP() {
       <p><strong>Days:</strong> ${day.toFixed(2)}</p>
     `;
 
-    let target = 0, prev = 0, reward = '';
+    let progressHTML = '';
+    let target = 0, reward = '';
+
     for (let i = 0; i < levels.length; i++) {
       if (xp < levels[i].xp) {
         reward = levels[i].keys;
         target = levels[i].xp;
-        prev = i === 0 ? 0 : levels[i - 1].xp;
         break;
       }
     }
 
     if (target === 0) {
-      result.innerHTML = `<div>${statsHTML}</div>`;
+      topStats.innerHTML = statsHTML;
       message.textContent = 'You are Real Moose!';
-      result.style.justifyContent = 'center';
       return;
     }
 
@@ -70,11 +72,11 @@ async function calculateXP() {
       <p><strong>Time:</strong> ${days}d ${hours}h ${minutes}m</p>
     `;
 
-    result.innerHTML = `<div>${progressHTML}</div><div>${statsHTML}</div>`;
-    result.style.justifyContent = 'space-between';
+    topStats.innerHTML = statsHTML;
+    bottomStats.innerHTML = progressHTML;
 
   } catch (e) {
-    result.innerHTML = `<div class="error">❌ ${e.message}</div>`;
+    topStats.innerHTML = `<div class="error">❌ ${e.message}</div>`;
   }
 }
 
@@ -88,14 +90,11 @@ window.onload = async () => {
   try {
     const res = await fetch('/.netlify/functions/leaderboard');
     const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || 'Failed to load leaderboard');
-
     const list = document.getElementById('leaderboardList');
     list.innerHTML = data.map(
       (u, i) => `<li>#${i + 1} ${u.username} — ${u.xp.toLocaleString()} XP</li>`
     ).join('');
   } catch (e) {
-    console.warn('Leaderboard error:', e.message);
+    console.warn('Leaderboard load failed:', e.message);
   }
 };
