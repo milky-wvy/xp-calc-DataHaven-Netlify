@@ -8,9 +8,11 @@ const supabase = createClient(
 );
 
 const MAX_PAGES = 103;
-const MAX_RETRIES = 10;
+const MAX_RETRIES = 3;
+const TIMEOUT = 10000; // 10 сек
+const CONCURRENCY = 5;
 
-// ⚙️ Получаем список прокси из Supabase
+// ⚙️ Получаем список прокси
 async function getProxies() {
   const { data, error } = await supabase.from('proxies').select('proxy_url');
   if (error || !data) throw new Error('Failed to load proxies from Supabase');
@@ -24,14 +26,14 @@ async function fetchPage(page, proxies) {
 
     let agent;
     try {
-      agent = new HttpsProxyAgent(proxy); // строка, не объект
-    } catch (err) {
-      console.warn(`Invalid proxy URL format: ${proxy}`);
+      agent = new HttpsProxyAgent(proxy);
+    } catch {
       continue;
     }
 
     try {
-      console.log(`Page ${page} | Attempt ${attempt} | Proxy: ${proxy}`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), TIMEOUT);
 
       const res = await fetch(`https://mee6.xyz/api/plugins/levels/leaderboard/1317255994459426868?limit=100&page=${page}`, {
         agent,
@@ -39,19 +41,17 @@ async function fetchPage(page, proxies) {
           Authorization: process.env.MEE6_TOKEN,
           'User-Agent': 'XPCollector/1.0'
         },
-        timeout: 15000
+        signal: controller.signal
       });
 
-      if (!res.ok) {
-        console.warn(`Page ${page} failed with status ${res.status}`);
-        continue;
-      }
+      clearTimeout(timeout);
 
+      if (!res.ok) continue;
       const data = await res.json();
       return data.players || [];
 
-    } catch (err) {
-      console.warn(`Page ${page} error: ${err.message}`);
+    } catch {
+      // пропускаем ошибку
     }
   }
 
@@ -59,7 +59,25 @@ async function fetchPage(page, proxies) {
   return [];
 }
 
-// 🚀 Основной handler
+// 🧠 Ограниченный параллелизм
+async function fetchAllPages(pages, proxies, concurrency = CONCURRENCY) {
+  const results = [];
+  let index = 0;
+
+  async function worker() {
+    while (index < pages.length) {
+      const page = pages[index++];
+      const result = await fetchPage(page, proxies);
+      results.push(result);
+    }
+  }
+
+  const workers = Array.from({ length: concurrency }, () => worker());
+  await Promise.all(workers);
+  return results;
+}
+
+// 🚀 Handler
 export default async function handler(req, res) {
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).send('Unauthorized');
@@ -69,13 +87,11 @@ export default async function handler(req, res) {
     const proxies = await getProxies();
     if (!proxies.length) throw new Error('No proxies available');
 
-    const allResults = await Promise.all(
-      Array.from({ length: MAX_PAGES }, (_, i) => fetchPage(i, proxies))
-    );
+    const pages = Array.from({ length: MAX_PAGES }, (_, i) => i);
+    const allResults = await fetchAllPages(pages, proxies);
 
     const allPlayers = allResults.flat().filter(p => p && p.id && p.username);
-
-    if (allPlayers.length === 0) {
+    if (!allPlayers.length) {
       return res.status(500).json({ error: 'No data collected' });
     }
 
