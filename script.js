@@ -1,4 +1,3 @@
-
 const levels = [
   { xp: 1150, keys: '1 key' },
   { xp: 4675, keys: '2 keys' },
@@ -18,8 +17,10 @@ async function calculateXP() {
 
   if (!username) return;
 
+  localStorage.setItem('xpInput', username); // Сохраняем
+
   try {
-    const res = await fetch(`/api/get-xp?username=${encodeURIComponent(username)}`);
+    const res = await fetch(`/.netlify/functions/get-xp?username=${encodeURIComponent(username)}`);
     const data = await res.json();
 
     if (!res.ok) throw new Error(data.error || 'Unknown error');
@@ -84,13 +85,15 @@ window.onload = async () => {
     calculateXP();
   }
 
-  // Load leaderboard
+  // Leaderboard
   try {
-    const res = await fetch('/api/leaderboard');
+    const res = await fetch('/.netlify/functions/leaderboard');
     const data = await res.json();
     const list = document.getElementById('leaderboardList');
     list.innerHTML = data.slice(0, 10).map(
       (u, i) => `<li>#${i + 1} ${u.username} — ${u.xp.toLocaleString()} XP</li>`
     ).join('');
-  } catch {}
-}
+  } catch {
+    // можно залогировать, но не обязательно
+  }
+};
