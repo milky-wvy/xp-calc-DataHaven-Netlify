@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>XP Calculator</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -38,6 +38,21 @@
     </label>
     <span>Dark Mode</span>
   </div>
+
+  <script>
+    const toggle = document.getElementById('themeToggle');
+    const bg = document.getElementById('background');
+
+    toggle.addEventListener('change', () => {
+      if (toggle.checked) {
+        document.body.classList.add('dark');
+        bg.style.backgroundImage = "url('background_night.png')";
+      } else {
+        document.body.classList.remove('dark');
+        bg.style.backgroundImage = "url('background_day.png')";
+      }
+    });
+  </script>
 
   <script src="script.js"></script>
 </body>
