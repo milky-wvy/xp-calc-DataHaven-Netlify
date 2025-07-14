@@ -2,52 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>XP Calculator</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="background"></div>
 
-  <div class="main-layout">
-    <!-- ЛЕВАЯ КОЛОНКА -->
-    <div class="left-panel">
-      <h3>🏆 Leaderboard</h3>
-      <ul id="leaderboardList"></ul>
-    </div>
-
-    <!-- ПРАВАЯ КОЛОНКА -->
-    <div class="right-panel">
-      <div id="topStats" class="stats-block"></div>
-      <div id="bottomStats" class="stats-block"></div>
-    </div>
-  </div>
-
-  <div class="center-input">
+  <div class="container">
     <h1>XP Calculator</h1>
     <input type="text" id="xpInput" placeholder="Enter your Discord name" />
     <button onclick="calculateXP()">Search XP</button>
+    <h2>Your Stats:</h2>
+    <div id="result" class="result-grid"></div>
     <div id="realMooseMessage"></div>
   </div>
 
-  <div class="theme-toggle">
-    <button id="themeToggle">🌙</button>
-    <span>Dark Mode</span>
+  <!-- 🎖️ Лидерборд -->
+  <div id="leaderboard">
+    <h3>🏆 Leaderboard</h3>
+    <ul id="leaderboardList"></ul>
   </div>
 
-  <script>
-    const toggle = document.getElementById('themeToggle');
-    const bg = document.getElementById('background');
-
-    toggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark');
-      const isDark = document.body.classList.contains('dark');
-      bg.style.backgroundImage = isDark
-        ? "url('background_night.png')"
-        : "url('background_day.png')";
-      toggle.textContent = isDark ? '☀️' : '🌙';
-    });
-  </script>
+  <!-- 🌗 Переключатель темы -->
+  <div class="theme-toggle">
+    <button id="themeSwitch">🌙</button>
+    <span>Dark Mode</span>
+  </div>
 
   <script src="script.js"></script>
 </body>
