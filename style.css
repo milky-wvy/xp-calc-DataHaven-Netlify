@@ -57,23 +57,25 @@ body.dark h1 {
 }
 
 #xpInput {
-  padding: 0.4rem 0.6rem;
+  padding: 0.6rem 1rem;
   border-radius: 6px;
   border: 1px solid #ccc;
-  min-width: 250px;
+  min-width: 300px;
+  font-size: 1rem;
 }
 
-button {
-  padding: 0.4rem 0.8rem;
+#search button {
+  padding: 0.6rem 1rem;
   background: #5a3223;
   color: #fff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: 0.2s;
+  font-size: 1rem;
 }
 
-button:hover {
+#search button:hover {
   background: #3d2217;
 }
 
@@ -106,6 +108,10 @@ body.dark .stats-box {
   font-size: 1.2rem;
   font-weight: bold;
   text-align: center;
+}
+
+body.dark #realMooseMessage {
+  color: white;
 }
 
 /* LEADERBOARD */
