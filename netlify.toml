@@ -1,15 +1,8 @@
 [build]
-  command = "npm run build" # если у тебя сборка, иначе можешь удалить
-  publish = "public"        # если у тебя статика в public/ или корне, измени при необходимости
+  publish = "."            # Папка, где index.html — скорее всего корень
   functions = "netlify/functions"
 
-[dev]
-  framework = "#custom"
-  targetPort = 8888
-  autoLaunch = true
-
 [functions]
-  directory = "netlify/functions"
   node_bundler = "esbuild"
 
 [[redirects]]
