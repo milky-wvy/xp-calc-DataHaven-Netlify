@@ -1,0 +1,23 @@
+[build]
+  command = "npm run build" # если у тебя сборка, иначе можешь удалить
+  publish = "public"        # если у тебя статика в public/ или корне, измени при необходимости
+  functions = "netlify/functions"
+
+[dev]
+  framework = "#custom"
+  targetPort = 8888
+  autoLaunch = true
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
