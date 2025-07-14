@@ -5,23 +5,26 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export async function handler(event, context) {
+export async function handler(event) {
+  const params = event.queryStringParameters;
+  const offset = parseInt(params.offset || '0');
+  const limit = parseInt(params.limit || '20');
+
   const { data, error } = await supabase
     .from('users_xp')
-    .select('username, xp, level')
+    .select('discord_id, username, xp, level')
     .order('xp', { ascending: false })
-    .limit(20); // выводим топ-20
+    .range(offset, offset + limit - 1);
 
   if (error) {
-    console.error('Supabase error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Database error', details: error.message }),
+      body: JSON.stringify({ error: 'Database error' })
     };
   }
 
   return {
     statusCode: 200,
-    body: JSON.stringify(data),
+    body: JSON.stringify(data)
   };
 }
