@@ -240,3 +240,36 @@ body.dark #leaderboardList li {
   background: #5a3223;
   width: 0;
 }
+
+/* MOBILE STYLES */
+@media (max-width: 600px) {
+  html, body {
+    overflow: auto;
+  }
+
+  #leaderboard {
+    position: static;
+    width: 90%;
+    height: auto;
+    margin: 1rem auto;
+  }
+
+  #search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #xpInput {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #search button {
+    width: 100%;
+  }
+
+  .stats-box,
+  #topStats {
+    width: 90%;
+  }
+}
