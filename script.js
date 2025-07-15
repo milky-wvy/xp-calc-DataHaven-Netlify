@@ -17,6 +17,7 @@ async function calculateXP() {
   const username = document.getElementById('xpInput').value.trim();
   const topStats = document.getElementById('topStats');
   const bottomStats = document.getElementById('bottomStats');
+  const statsWrapper = document.getElementById('statsWrapper');
   const message = document.getElementById('realMooseMessage');
   topStats.innerHTML = '';
   bottomStats.innerHTML = '';
@@ -45,6 +46,7 @@ async function calculateXP() {
     `;
 
     topStats.innerHTML = statsHTML;
+    statsWrapper.classList.remove('center');
 
     let target = 0, prev = 0, reward = '';
     for (let i = 0; i < levels.length; i++) {
@@ -67,16 +69,29 @@ async function calculateXP() {
     const hours = Math.floor((minutesLeft % 1440) / 60);
     const minutes = minutesLeft % 60;
 
+    const progressPercent = Math.max(
+      0,
+      Math.min(100, ((xp - prev) / (target - prev)) * 100)
+    );
     const progressHTML = `
       <h3>🔑 Progress</h3>
       <p><strong>To reach:</strong> ${reward}</p>
       <p><strong>XP left:</strong> ${left.toLocaleString()}</p>
       <p><strong>Time:</strong> ${days}d ${hours}h ${minutes}m</p>
+      <div class="progress-container">
+        <div class="progress-bar" style="width: ${progressPercent}%"></div>
+      </div>
     `;
 
     bottomStats.innerHTML = progressHTML;
+    if (!topStats.innerHTML.trim() && progressHTML) {
+      statsWrapper.classList.add('center');
+    } else {
+      statsWrapper.classList.remove('center');
+    }
   } catch (e) {
     topStats.innerHTML = `<div class="error">❌ ${e.message}</div>`;
+    statsWrapper.classList.remove('center');
   }
 }
 
