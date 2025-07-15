@@ -92,18 +92,15 @@ body.dark h1 {
 
 /* STATS & PROGRESS */
 #statsWrapper {
-  position: absolute;
-  right: 20px;
-  top: 100px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  align-items: flex-end;
+  align-items: center;
+  width: 100%;
+  margin-top: 1rem;
 }
 
 #statsWrapper.center {
-  right: 50%;
-  transform: translateX(50%);
   align-items: center;
 }
 
