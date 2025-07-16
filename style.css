@@ -220,8 +220,8 @@ body.dark #leaderboardList li {
 /* AUTHOR BUTTON */
 #authorButton {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
+  bottom: 40px;
+  right: 40px;
   background: #5a3223;
   color: white;
   padding: 0.4rem 0.8rem;
