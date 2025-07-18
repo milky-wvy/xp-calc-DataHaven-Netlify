@@ -217,17 +217,20 @@ body.dark #leaderboardList li {
   background: #3a1f13;
 }
 
-/* AUTHOR BUTTON */
+/* AUTHOR & DONATE BUTTONS */
+#authorButton, #donateButton {
+  font-size: 1.1rem;
+  padding: 0.6rem 1.2rem;
+}
+
 #authorButton {
   position: absolute;
   bottom: 40px;
-  right: 40px;
+  right: 180px;
   background: #5a3223;
   color: white;
-  padding: 0.4rem 0.8rem;
   border-radius: 6px;
   text-decoration: none;
-  font-size: 0.9rem;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -235,6 +238,26 @@ body.dark #leaderboardList li {
 }
 
 #authorButton:hover {
+  background: #3a1f13;
+}
+
+#donateButton {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  background: #5a3223;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.3s;
+}
+
+#donateButton:hover {
   background: #3a1f13;
 }
 
@@ -260,6 +283,43 @@ body.dark #leaderboardList li {
   height: 100%;
   background: #5a3223;
   width: 0;
+}
+
+/* MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 2rem;
+  border: 2px solid #5a3223;
+  border-radius: 16px;
+  width: 400px;
+  text-align: center;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+body.dark .modal-content {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+.close-button {
+  float: right;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 /* MOBILE STYLES */
@@ -292,5 +352,11 @@ body.dark #leaderboardList li {
   .stats-box,
   #topStats {
     width: 90%;
+  }
+
+  .modal-content {
+    width: 90%;
+    margin: 20% auto;
+    font-size: 1rem;
   }
 }
