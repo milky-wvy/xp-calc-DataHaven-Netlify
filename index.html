@@ -1,45 +1,172 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link rel="icon" href="/favicon.png" type="image/png" />
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>XP Calculator</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
+const levels = [
+  { xp: 1150, keys: '1 key' },
+  { xp: 4675, keys: '2 keys' },
+  { xp: 11825, keys: '2 keys' },
+  { xp: 23850, keys: '2 keys' },
+  { xp: 42000, keys: '2 keys' },
+  { xp: 67525, keys: '3 keys' },
+  { xp: 101675, keys: '3 keys' }
+];
+
+const loadedUserIds = new Set();
+let leaderboardOffset = 0;
+const leaderboardLimit = 20;
+let isLoadingMore = false;
+
+async function calculateXP() {
+  const username = document.getElementById('xpInput').value.trim();
+  const topStats = document.getElementById('topStats');
+  const bottomStats = document.getElementById('bottomStats');
+  const statsWrapper = document.getElementById('statsWrapper');
+  const message = document.getElementById('realMooseMessage');
+  topStats.innerHTML = '';
+  bottomStats.innerHTML = '';
+  message.textContent = '';
+
+  if (!username) return;
+
+  try {
+    const res = await fetch(`/.netlify/functions/get-xp?username=${encodeURIComponent(username)}`);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Unknown error');
+
+    const { xp, level } = data;
+    const minute = xp / 9.5;
+    const hour = minute / 60;
+    const day = hour / 24;
+
+    let statsHTML = `
+      <h3>📊 Your Stats</h3>
+      <p><strong>Username:</strong> ${data.username}</p>
+      <p><strong>XP:</strong> ${xp.toLocaleString()}</p>
+      <p><strong>Minutes:</strong> ${minute.toFixed(2)}</p>
+      <p><strong>Hours:</strong> ${hour.toFixed(2)}</p>
+      <p><strong>Days:</strong> ${day.toFixed(2)}</p>
+    `;
+
+    topStats.innerHTML = statsHTML;
+    statsWrapper.classList.remove('center');
+
+    let target = 0, prev = 0, reward = '';
+    for (let i = 0; i < levels.length; i++) {
+      if (xp < levels[i].xp) {
+        reward = levels[i].keys;
+        target = levels[i].xp;
+        prev = i === 0 ? 0 : levels[i - 1].xp;
+        break;
+      }
     }
-  </style>
-</head>
-<body>
-  <div id="background"></div>
 
-  <div id="leaderboard">
-    <h3>🏆 Leaderboard</h3>
-    <ul id="leaderboardList"></ul>
-  </div>
+    if (target === 0) {
+      message.textContent = 'You are Real Moose!';
+      return;
+    }
 
-    <div class="container" id="mainContainer">
-      <h1>XP Calculator</h1>
-      <div id="search">
-        <input type="text" id="xpInput" placeholder="Enter your Discord name" />
-        <button onclick="calculateXP()">Search XP</button>
+    const left = target - xp;
+    const minutesLeft = Math.round(left / 9.5);
+    const days = Math.floor(minutesLeft / 1440);
+    const hours = Math.floor((minutesLeft % 1440) / 60);
+    const minutes = minutesLeft % 60;
+
+    const progressPercent = Math.max(
+      0,
+      Math.min(100, ((xp - prev) / (target - prev)) * 100)
+    );
+    const progressHTML = `
+      <h3>🔑 Progress</h3>
+      <p><strong>To reach:</strong> ${reward}</p>
+      <p><strong>XP left:</strong> ${left.toLocaleString()}</p>
+      <p><strong>Time:</strong> ${days}d ${hours}h ${minutes}m</p>
+      <div class="progress-container">
+        <div class="progress-bar" style="width: ${progressPercent}%"></div>
       </div>
-      <div id="realMooseMessage"></div>
-      <div id="statsWrapper">
-        <div id="topStats" class="stats-box"></div>
-        <div id="bottomStats" class="stats-box"></div>
-      </div>
-    </div>
+    `;
 
-  <div class="theme-toggle">
-    <button id="themeSwitch">🌙 Dark Mode</button>
-  </div>
+    bottomStats.innerHTML = progressHTML;
+    if (!topStats.innerHTML.trim() && progressHTML) {
+      statsWrapper.classList.add('center');
+    } else {
+      statsWrapper.classList.remove('center');
+    }
+  } catch (e) {
+    topStats.innerHTML = `<div class="error">❌ ${e.message}</div>`;
+    statsWrapper.classList.remove('center');
+  }
+}
 
-  <a href="https://x.com/Milky_WVY" id="authorButton" target="_blank">Author</a>
+async function loadLeaderboard() {
+  if (isLoadingMore) return;
+  isLoadingMore = true;
 
-  <script src="script.js"></script>
-</body>
-</html>
+  try {
+    const res = await fetch(`/.netlify/functions/leaderboard?offset=${leaderboardOffset}&limit=${leaderboardLimit}`);
+    const data = await res.json();
+
+    const list = document.getElementById('leaderboardList');
+
+    data.forEach((user, index) => {
+      if (loadedUserIds.has(user.discord_id)) return;
+
+      loadedUserIds.add(user.discord_id);
+
+      const li = document.createElement('li');
+      li.innerHTML = `#${leaderboardOffset + index + 1} <b>${user.username}</b> — ${user.xp.toLocaleString()} XP<br/>Level ${user.level}`;
+      list.appendChild(li);
+    });
+
+    leaderboardOffset += leaderboardLimit;
+  } catch (err) {
+    console.error('Failed to load leaderboard:', err);
+  } finally {
+    isLoadingMore = false;
+  }
+}
+
+window.onload = () => {
+  const savedXP = localStorage.getItem('xpInput');
+  if (savedXP) {
+    document.getElementById('xpInput').value = savedXP;
+    calculateXP();
+  }
+  loadLeaderboard();
+};
+
+const leaderboardContainer = document.getElementById('leaderboard');
+leaderboardContainer.addEventListener('scroll', () => {
+  if (
+    leaderboardContainer.scrollTop +
+      leaderboardContainer.clientHeight >=
+    leaderboardContainer.scrollHeight - 10
+  ) {
+    loadLeaderboard();
+  }
+});
+
+document.getElementById('themeSwitch').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  document.getElementById('background').style.backgroundImage = isDark
+    ? "url('background_night.png')"
+    : "url('background_day.png')";
+
+  const button = document.getElementById('themeSwitch');
+  button.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+});
+const donateButton = document.getElementById('donateButton');
+const donateModal = document.getElementById('donateModal');
+const closeButton = document.querySelector('.close-button');
+
+donateButton.addEventListener('click', () => {
+  donateModal.style.display = 'block';
+});
+
+closeButton.addEventListener('click', () => {
+  donateModal.style.display = 'none';
+});
+
+window.addEventListener('click', (event) => {
+  if (event.target === donateModal) {
+    donateModal.style.display = 'none';
+  }
+});
